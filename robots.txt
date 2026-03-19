@@ -1,10 +1,5 @@
 User-agent: *
 Allow: /
 
-# Blocca l'accesso ai file di sistema
-Disallow: /assets/
-Disallow: /*.js$
-Disallow: /*.css$
-
 # Sitemap
 Sitemap: https://www.veeswal.it/sitemap.xml
