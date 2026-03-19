@@ -146,6 +146,11 @@ body {
   font-weight: 900;  
 }
 
+#menu-toggle-wrapper {
+  width: 100vw;
+  height: 5vh;
+}
+
 #menu-toggle {
   position: fixed;
   color: var(--quadrary-color);
@@ -155,6 +160,7 @@ body {
   font-size:calc(22px + 1.2vw);
   line-height: 30%;
   font-weight: 700;
+  background: #000;
 }
 
 #menu-toggle:hover{
