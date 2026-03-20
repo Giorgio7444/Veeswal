@@ -33,6 +33,18 @@ body {
   transition: all 0.3s;
 }
 
+#menu-active-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100px;
+  background: #000000;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 900;
+}
+
 #preloader {
   position: fixed;
   top: 0;
@@ -146,11 +158,6 @@ body {
   font-weight: 900;  
 }
 
-#menu-toggle-wrapper {
-  width: 100vw;
-  height: 5vh;
-}
-
 #menu-toggle {
   position: fixed;
   color: var(--quadrary-color);
@@ -160,7 +167,6 @@ body {
   font-size:calc(22px + 1.2vw);
   line-height: 30%;
   font-weight: 700;
-  background: #000;
 }
 
 #menu-toggle:hover{
@@ -206,19 +212,33 @@ color: var(--secondary-color);
   height: auto;
 }
 
-.grid-poster {
-  display: flex;
-  flex-wrap: wrap;
-  margin-right: -1vw;
+.grid-poster,
+.grid-pasta,
+.grid-still,
+.grid-olivetti {
+  position: relative;
+  display: block;
+}
+
+.grid-sizer-poster,
+.grid-sizer-pasta,
+.grid-sizer-still,
+.grid-sizer-olivetti {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .grid-sizer-poster {
-  width: 33%;
-  height: auto;
+  width: 33.3333%;
 }
 
 .grid-item-poster {
-  width: 33%;
+  width: 33.3333%;
   padding-right: 1vw;
   margin-bottom: 1vw;
   box-sizing: border-box;
@@ -231,23 +251,15 @@ color: var(--secondary-color);
 }
 
 .grid-item-poster--66wide {
-  width: 66%;
-}
-
-.grid-pasta {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: -1vw;
+  width: 66.6667%;
 }
 
 .grid-sizer-pasta {
-  width: 33%;
-  height: 0;
-  visibility: hidden;
+  width: 33.3333%;
 }
 
 .grid-item-pasta {
-  width: 33%;
+  width: 33.3333%;
   padding-left: 1vw;
   padding-bottom: 0.9vw;
   box-sizing: border-box;
@@ -263,20 +275,12 @@ color: var(--secondary-color);
   width: 100%;
 }
 
-.grid-still {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: -1vw;
-}
-
 .grid-sizer-still {
-  width: 33%;
-  height: 0;
-  visibility: hidden;
+  width: 33.3333%;
 }
 
 .grid-item-still {
-  width: 33%;
+  width: 33.3333%;
   padding-left: 1vw;
   padding-bottom: 0.9vw;
   box-sizing: border-box;
@@ -286,6 +290,27 @@ color: var(--secondary-color);
   display: block;
   width: 100%;
   height: auto;
+}
+
+.grid-sizer-olivetti {
+  width: 25%;
+}
+
+.grid-item-olivetti {
+  width: 25%;
+  padding-left: 1vw;
+  padding-bottom: 0.9vw;
+  box-sizing: border-box;
+}
+
+.grid-item-olivetti img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.grid-item-olivetti--50wide {
+  width: 50%;
 }
 
 #item-hover:hover{

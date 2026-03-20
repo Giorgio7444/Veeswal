@@ -279,10 +279,11 @@ silktideCookieBannerManager.updateCookieBannerConfig({
 
 <body class="no-scroll">
   <div id="background-layer"></div>
+  <div id="menu-active-banner" aria-hidden="true"></div>
 
   <div id="preloader">
     <div class="loader">
-      <img alt="Logo Veeswal di Giorgio Pulli" src="assets/logob.png" width="1712" height="1580">
+      <img alt="Logo Veeswal di Giorgio Pulli" src="assets/logob.png" width="100vw" height="100vh">
     </div>
   </div>
 
@@ -297,7 +298,7 @@ silktideCookieBannerManager.updateCookieBannerConfig({
   </div>
   </div>
 
-  <div class="w-full flex">
+  <div class="menu-toggle-bar w-full flex">
     <a href="#" id="menu-toggle">LET'S GO!</a>
   </div>
 
@@ -501,22 +502,26 @@ silktideCookieBannerManager.updateCookieBannerConfig({
     '.grid-poster': {
       'itemSelector': '.grid-item-poster',
       'columnWidth': '.grid-sizer-poster',
-      'percentPosition': true
+      'percentPosition': true,
+      'horizontalOrder': true
     },
     '.grid-pasta': {  
       'itemSelector': '.grid-item-pasta',
       'columnWidth': '.grid-sizer-pasta',
-      'percentPosition': true
+      'percentPosition': true,
+      'horizontalOrder': true
     },
     '.grid-olivetti': {
       'itemSelector': '.grid-item-olivetti', 
       'columnWidth': '.grid-sizer-olivetti',
-      'percentPosition': true
+      'percentPosition': true,
+      'horizontalOrder': true
     },
     '.grid-still': {
       'itemSelector': '.grid-item-still',
       'columnWidth': '.grid-sizer-still',
-      'percentPosition': true
+      'percentPosition': true,
+      'horizontalOrder': true
     }
   };
 

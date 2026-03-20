@@ -43,24 +43,114 @@ function initializeScroll() {
   }
 }
 
+function prepareGalleryImages() {
+  const galleryImages = document.querySelectorAll('img');
+
+  galleryImages.forEach((img) => {
+    if (!img.hasAttribute('loading')) {
+      img.setAttribute('loading', 'lazy');
+    }
+    if (!img.hasAttribute('decoding')) {
+      img.setAttribute('decoding', 'async');
+    }
+  });
+}
+
+function updateOpenAccordionHeight(item) {
+  if (!item || !item.classList.contains('active')) return;
+
+  const content = item.querySelector('.accordion-content, .content, .contentps');
+  if (!content) return;
+
+  content.style.maxHeight = content.scrollHeight + 'px';
+}
+
+function scheduleMasonryLayout(masonry, item) {
+  if (!masonry) return;
+
+  masonry.reloadItems();
+  masonry.layout();
+  updateOpenAccordionHeight(item);
+
+  requestAnimationFrame(() => {
+    masonry.reloadItems();
+    masonry.layout();
+    updateOpenAccordionHeight(item);
+  });
+}
+
+function getMasonryDataFromItem(item) {
+  const button = item.querySelector('button[data-masonry-selector]');
+  if (!button) return null;
+
+  const masonrySelector = button.dataset.masonrySelector;
+  if (!masonrySelector) return null;
+
+  const masonryContainer = item.querySelector(masonrySelector);
+  if (!masonryContainer) return null;
+
+  const masonryConfig = typeof mansonrySettings !== 'undefined'
+    ? mansonrySettings
+    : window.mansonrySettings;
+  const masonrySettings = masonryConfig && masonryConfig[masonrySelector];
+  if (!masonrySettings) return null;
+
+  return { button, masonryContainer, masonrySettings };
+}
+
+function bindMasonryImageEvents(masonryContainer, masonry, item) {
+  if (masonryContainer.dataset.masonryImageEventsBound === 'true') return;
+
+  const relayout = (event) => {
+    if (event.target && event.target.tagName === 'IMG') {
+      scheduleMasonryLayout(masonry, item);
+    }
+  };
+
+  masonryContainer.addEventListener('load', relayout, true);
+  masonryContainer.addEventListener('error', relayout, true);
+
+  if (typeof imagesLoaded === 'function') {
+    imagesLoaded(masonryContainer).on('progress', () => {
+      scheduleMasonryLayout(masonry, item);
+    });
+    imagesLoaded(masonryContainer).on('always', () => {
+      scheduleMasonryLayout(masonry, item);
+    });
+  }
+
+  masonryContainer.dataset.masonryImageEventsBound = 'true';
+}
+
+function ensureMasonryForItem(item) {
+  const data = getMasonryDataFromItem(item);
+  if (!data) return null;
+
+  const { button, masonryContainer, masonrySettings } = data;
+  let masonry = Masonry.data(masonryContainer);
+
+  if (!masonry) {
+    masonry = new Masonry(masonryContainer, masonrySettings);
+  }
+
+  bindMasonryImageEvents(masonryContainer, masonry, item);
+  button.dataset.masonryInit = 'true';
+
+  scheduleMasonryLayout(masonry, item);
+
+  return masonry;
+}
+
 function openAccordionItem(item) {
   const content = item.querySelector('.accordion-content, .content, .contentps');
   if (!content) return;
 
+  const masonry = ensureMasonryForItem(item);
+
   content.addEventListener('transitionend', function handleTransition(e) {
     if (e.propertyName === 'max-height') {
-      const masonryContainer = item.querySelector('.masonry-container');
-      if (masonryContainer) {
-        const masonry = Masonry.data(masonryContainer);
-        if (masonry) {
-          masonry.layout();
-        } else {
-          new Masonry(masonryContainer, {
-            itemSelector: '.masonry-item',
-            columnWidth: '.masonry-sizer',
-            percentPosition: true,
-          });
-        }
+      if (masonry) {
+        scheduleMasonryLayout(masonry, item);
       }
       content.removeEventListener('transitionend', handleTransition);
     }
@@ -83,6 +173,8 @@ const setupTitle = () => {
 
 const setupAccordion = () => {
   const accordion = document.querySelector(".accordion");
+  if (!accordion) return;
+
   const buttons = accordion.querySelectorAll("button");
   const contents = accordion.querySelectorAll(".content, .contentps, .accordion-content");
   let currentButton = null;
@@ -95,16 +187,6 @@ const setupAccordion = () => {
       
       buttons.forEach((btn) => btn.parentElement.classList.remove("active"));
       contents.forEach((content) => (content.style.maxHeight = "0"));
-
-    
-      const masonrySelector = button.dataset.masonrySelector;
-      const masonryInit = button.dataset.masonryInit;
-      if (masonrySelector && !masonryInit) {
-        const masonrySettings = mansonrySettings[masonrySelector];
-        console.log('masonrySelector', masonrySelector, masonrySettings);
-        new Masonry(masonrySelector, masonrySettings);
-        button.dataset.masonryInit = true;
-      }
 
       if (currentButton === button) {
         currentButton = null;
@@ -133,8 +215,14 @@ const setupMenu = () => {
   const menuItems = document.querySelectorAll("#menu .item");
   const changeText = document.querySelector("#menu-toggle");
   const backgroundLayer = document.querySelector("#background-layer");
+  const menuActiveBanner = document.querySelector("#menu-active-banner");
+
+  if (!menuToggle || !changeText) return;
 
   gsap.set(menuToggle, { y: window.innerHeight - 200 });
+  if (menuActiveBanner) {
+    gsap.set(menuActiveBanner, { opacity: 0 });
+  }
 
   const speed = 0.5;
   const tl = gsap.timeline({ paused: true });
@@ -176,6 +264,13 @@ const setupMenu = () => {
     }
 
     menuToggle.classList.toggle("active");
+    if (menuActiveBanner) {
+      gsap.to(menuActiveBanner, {
+        opacity: menuToggle.classList.contains("active") ? 1 : 0,
+        duration: speed,
+        ease: "power1.inOut",
+      });
+    }
   });
 
   changeText.addEventListener("click", () => {
@@ -188,6 +283,7 @@ const setupMenu = () => {
 document.addEventListener("DOMContentLoaded", () => {
   initializeScroll();
   
+  prepareGalleryImages();
   setupTitle();
   setupAccordion();
   setupMenu();
