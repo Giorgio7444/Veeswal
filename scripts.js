@@ -337,6 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTitle();
   setupAccordion();
   setupMenu();
+  console.log("Ciao! Il sito in cui ti trovi l'ho progettato io, non sono un dev ma ho voluto mettermi alla prova e ho imparato molto da questa esperienza");
 });
 
 window.addEventListener("load", () => {
