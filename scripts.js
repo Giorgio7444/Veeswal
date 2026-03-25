@@ -251,7 +251,7 @@ const setupAccordion = () => {
 
       setTimeout(() => {
         const elementTop = button.getBoundingClientRect().top + window.scrollY;
-        const extraOffset = window.innerWidth * 0.05;
+        const extraOffset = window.innerWidth * 0.04;
         window.scrollTo({
           top: elementTop - extraOffset,
           behavior: "smooth",
