@@ -1,5 +1,3 @@
 User-agent: *
 Allow: /
-
-# Sitemap
 Sitemap: https://www.veeswal.it/sitemap.xml

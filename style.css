@@ -39,7 +39,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100px;
-  background: #000000;
+  background: var(--primary-color);
   opacity: 0;
   pointer-events: none;
   z-index: 900;
@@ -62,15 +62,28 @@ body {
 }
 
 .loader {
-  width: 100px;
-  height: auto;
-  padding: 10px;
-  border-radius: 50%;
-  animation: spin 3s linear infinite;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-@keyframes spin {
-  to {
+.loader img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: rotateLogo 3s linear infinite;
+  transform-origin: center center;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes rotateLogo {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(360deg);
   }
 }
@@ -173,7 +186,13 @@ body {
 color: var(--secondary-color);
 }
 
-#menu-opener {
+#menu-toggle:focus-visible,
+.menu-opener:focus-visible {
+  outline: 2px solid var(--tertiary-color);
+  outline-offset: 4px;
+}
+
+.menu-opener {
   padding-bottom: 0.16em;
   margin-left: 1vw;
   justify-content: left;
@@ -313,7 +332,7 @@ color: var(--secondary-color);
   width: 50%;
 }
 
-#item-hover:hover{
+.item-hover:hover{
   color: var(--secondary-color); 
   transition: all 200ms ease-in;
 }
@@ -328,4 +347,17 @@ color: var(--secondary-color);
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
+  }
+
+  .loader img {
+    animation: rotateLogo 3s linear infinite !important;
+  }
 }

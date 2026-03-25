@@ -25,6 +25,8 @@ function setScrollState(state) {
   }
 }
 
+const masonryLayoutState = new WeakMap();
+
 function initializeScroll() {
   const savedScroll = getScrollState();
   
@@ -47,12 +49,18 @@ function prepareGalleryImages() {
   const galleryImages = document.querySelectorAll('img');
 
   galleryImages.forEach((img) => {
-    if (!img.hasAttribute('loading')) {
-      img.setAttribute('loading', 'lazy');
+    const isPreloaderImage = Boolean(img.closest('#preloader'));
+
+    if (isPreloaderImage) {
+      if (!img.hasAttribute('loading')) img.setAttribute('loading', 'eager');
+      if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'sync');
+      if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority', 'high');
+      return;
     }
-    if (!img.hasAttribute('decoding')) {
-      img.setAttribute('decoding', 'async');
-    }
+
+    if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+    if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
+    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority', 'low');
   });
 }
 
@@ -68,15 +76,37 @@ function updateOpenAccordionHeight(item) {
 function scheduleMasonryLayout(masonry, item) {
   if (!masonry) return;
 
-  masonry.reloadItems();
-  masonry.layout();
-  updateOpenAccordionHeight(item);
+  const existingState = masonryLayoutState.get(masonry);
+  if (existingState) {
+    existingState.item = item;
+    return;
+  }
+
+  const state = { item };
+  masonryLayoutState.set(masonry, state);
 
   requestAnimationFrame(() => {
+    const latestState = masonryLayoutState.get(masonry) || state;
+    masonryLayoutState.delete(masonry);
+
     masonry.reloadItems();
     masonry.layout();
-    updateOpenAccordionHeight(item);
+    updateOpenAccordionHeight(latestState.item);
+
+    requestAnimationFrame(() => {
+      masonry.layout();
+      updateOpenAccordionHeight(latestState.item);
+    });
   });
+}
+
+function setAccordionA11yState(button, content, isOpen) {
+  if (button) {
+    button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+  if (content) {
+    content.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+  }
 }
 
 function getMasonryDataFromItem(item) {
@@ -179,13 +209,32 @@ const setupAccordion = () => {
   const contents = accordion.querySelectorAll(".content, .contentps, .accordion-content");
   let currentButton = null;
 
+  buttons.forEach((button, index) => {
+    const item = button.parentElement;
+    const content = item ? item.querySelector(".content, .contentps, .accordion-content") : null;
+    if (!content) return;
+
+    if (!content.id) {
+      const itemId = item && item.id ? item.id : `accordion-item-${index + 1}`;
+      content.id = `${itemId}-panel`;
+    }
+
+    button.setAttribute('aria-controls', content.id);
+    content.setAttribute('role', 'region');
+    setAccordionA11yState(button, content, false);
+  });
+
   buttons.forEach((button) => {
     button.addEventListener("click", () => {
       document.body.style.overflowY = "auto";
       document.body.classList.remove("no-scroll");
       setScrollState("auto");
       
-      buttons.forEach((btn) => btn.parentElement.classList.remove("active"));
+      buttons.forEach((btn) => {
+        btn.parentElement.classList.remove("active");
+        const btnContent = btn.parentElement.querySelector(".content, .contentps, .accordion-content");
+        setAccordionA11yState(btn, btnContent, false);
+      });
       contents.forEach((content) => (content.style.maxHeight = "0"));
 
       if (currentButton === button) {
@@ -194,13 +243,15 @@ const setupAccordion = () => {
       }
 
       const item = button.parentElement;
+      const content = item.querySelector(".content, .contentps, .accordion-content");
       item.classList.add("active");
+      setAccordionA11yState(button, content, true);
       openAccordionItem(item);
       currentButton = button;
 
       setTimeout(() => {
         const elementTop = button.getBoundingClientRect().top + window.scrollY;
-        const extraOffset = window.innerWidth * 0.005;
+        const extraOffset = window.innerWidth * 0.05;
         window.scrollTo({
           top: elementTop - extraOffset,
           behavior: "smooth",
@@ -213,11 +264,10 @@ const setupAccordion = () => {
 const setupMenu = () => {
   const menuToggle = document.querySelector("#menu-toggle");
   const menuItems = document.querySelectorAll("#menu .item");
-  const changeText = document.querySelector("#menu-toggle");
   const backgroundLayer = document.querySelector("#background-layer");
   const menuActiveBanner = document.querySelector("#menu-active-banner");
 
-  if (!menuToggle || !changeText) return;
+  if (!menuToggle) return;
 
   gsap.set(menuToggle, { y: window.innerHeight - 200 });
   if (menuActiveBanner) {
@@ -225,20 +275,21 @@ const setupMenu = () => {
   }
 
   const speed = 0.5;
+  const menuToggleDelay = 0.5;
   const tl = gsap.timeline({ paused: true });
 
   tl.to("#site-title", speed, { opacity: "0", ease: "power1.inOut" });
-  tl.to("#menu-toggle", speed, { y: "-13vh", ease: "power1" }, `-=${speed / 3}`);
+  tl.to("#menu-toggle", speed, { y: "-13vh", ease: "power1" }, speed);
   tl.to(menuItems, { opacity: 1, y: "-95vh", stagger: 0.1 }, `-=${speed / 2}`);
 
   const toggleBackground = (hide) => {
     if (!backgroundLayer) return;
     if (hide) {
-      backgroundLayer.style.opacity = "0";
+        backgroundLayer.style.opacity = "0";
     } else {
       setTimeout(() => {
         backgroundLayer.style.opacity = "1";
-      }, 600);
+      }, 1200);
     }
   };
 
@@ -268,14 +319,13 @@ const setupMenu = () => {
       gsap.to(menuActiveBanner, {
         opacity: menuToggle.classList.contains("active") ? 1 : 0,
         duration: speed,
+        delay: 0.5,
         ease: "power1.inOut",
       });
     }
-  });
 
-  changeText.addEventListener("click", () => {
     setTimeout(() => {
-      changeText.textContent = menuToggle.classList.contains("active") ? "GO BACK!" : "LET'S GO!";
+      menuToggle.textContent = menuToggle.classList.contains("active") ? "GO BACK!" : "LET'S GO!";
     }, 800);
   });
 };
@@ -297,12 +347,12 @@ window.addEventListener("load", () => {
   }
 });
 
-const itemHover = document.getElementById("item-hover");
-if (itemHover) {
+const itemHoverElements = document.querySelectorAll(".item-hover");
+itemHoverElements.forEach((itemHover) => {
   itemHover.addEventListener("mouseenter", () => {
     itemHover.classList.add("highlight");
   });
   itemHover.addEventListener("mouseleave", () => {
     itemHover.classList.remove("highlight");
   });
-}
+});
