@@ -357,3 +357,47 @@ itemHoverElements.forEach((itemHover) => {
     itemHover.classList.remove("highlight");
   });
 });
+
+    document.body.classList.add('loading');
+
+    const preloaderFrames = [
+      'assets/Preloaders/Tavola disegno 17gel.svg',
+      'assets/Preloaders/Tavola disegno 18gel.svg',
+      'assets/Preloaders/Tavola disegno 19gel.svg',
+      'assets/Preloaders/Tavola disegno 20gel.svg',
+      'assets/Preloaders/Tavola disegno 21gel.svg',
+      'assets/Preloaders/Tavola disegno 22gel.svg',
+      'assets/Preloaders/Tavola disegno 23gel.svg',
+      'assets/Preloaders/Tavola disegno 24gel.svg',
+      'assets/Preloaders/Tavola disegno 25gel.svg',
+      'assets/Preloaders/Tavola disegno 26gel.svg',
+      'assets/Preloaders/Tavola disegno 27gel.svg',
+      'assets/Preloaders/Tavola disegno 28gel.svg',
+      'assets/Preloaders/Tavola disegno 29gel.svg',
+      'assets/Preloaders/Tavola disegno 30gel.svg'
+    ];
+
+    const preloaderImage = document.getElementById('preloader-sequence-image');
+    let preloaderFrameIndex = 0;
+
+    const preloaderInterval = setInterval(() => {
+      if (!preloaderImage || preloaderFrames.length === 0) {
+        return;
+      }
+
+      preloaderFrameIndex = (preloaderFrameIndex + 1) % preloaderFrames.length;
+      preloaderImage.src = preloaderFrames[preloaderFrameIndex];
+    }, 200);
+
+    window.addEventListener('load', function () {
+      const preloader = document.getElementById('preloader');
+
+      clearInterval(preloaderInterval);
+
+      preloader.classList.add('fade-out');
+
+      setTimeout(() => {
+        preloader.style.display = 'none';
+        document.body.classList.remove('loading');
+      }, 600);
+    });

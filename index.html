@@ -200,7 +200,7 @@ silktideCookieBannerManager.updateCookieBannerConfig({
 
   <div id="preloader">
     <div class="loader">
-      <img alt="Logo Veeswal di Giorgio Pulli" src="assets/logob.png">
+      <img id="preloader-sequence-image" alt="Animazione preloader Veeswal" src="assets/Preloaders/Tavola disegno 17gel.svg">
     </div>
   </div>
 
@@ -436,21 +436,6 @@ silktideCookieBannerManager.updateCookieBannerConfig({
     }
   };
 
-    </script>
-  <script>
-
-    document.body.classList.add('loading');
-
-    window.addEventListener('load', function () {
-      const preloader = document.getElementById('preloader');
-
-      preloader.classList.add('fade-out');
-
-      setTimeout(() => {
-        preloader.style.display = 'none';
-        document.body.classList.remove('loading');
-      }, 600); 
-    });
     </script>
 
 <script type="application/ld+json">
