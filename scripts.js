@@ -378,26 +378,48 @@ itemHoverElements.forEach((itemHover) => {
     ];
 
     const preloaderImage = document.getElementById('preloader-sequence-image');
+    let preloaderSequence = [];
     let preloaderFrameIndex = 0;
+
+    const shuffleFrames = (frames) => {
+      const shuffledFrames = [...frames];
+
+      for (let index = shuffledFrames.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledFrames[index], shuffledFrames[randomIndex]] = [shuffledFrames[randomIndex], shuffledFrames[index]];
+      }
+
+      return shuffledFrames;
+    };
+
+    const buildRandomSequence = (previousFrame) => {
+      const randomSequence = shuffleFrames(preloaderFrames);
+
+      if (previousFrame && randomSequence[0] === previousFrame && randomSequence.length > 1) {
+        [randomSequence[0], randomSequence[1]] = [randomSequence[1], randomSequence[0]];
+      }
+
+      return randomSequence;
+    };
+
+    preloaderSequence = buildRandomSequence();
+
+    if (preloaderImage && preloaderSequence.length > 0) {
+      preloaderImage.src = preloaderSequence[0];
+    }
 
     const preloaderInterval = setInterval(() => {
       if (!preloaderImage || preloaderFrames.length === 0) {
         return;
       }
 
-      preloaderFrameIndex = (preloaderFrameIndex + 1) % preloaderFrames.length;
-      preloaderImage.src = preloaderFrames[preloaderFrameIndex];
-    }, 200);
+      preloaderFrameIndex += 1;
 
-    window.addEventListener('load', function () {
-      const preloader = document.getElementById('preloader');
+      if (preloaderFrameIndex >= preloaderSequence.length) {
+        preloaderSequence = buildRandomSequence(preloaderSequence[preloaderSequence.length - 1]);
+        preloaderFrameIndex = 0;
+      }
 
-      clearInterval(preloaderInterval);
+      preloaderImage.src = preloaderSequence[preloaderFrameIndex];
+    }, 250);
 
-      preloader.classList.add('fade-out');
-
-      setTimeout(() => {
-        preloader.style.display = 'none';
-        document.body.classList.remove('loading');
-      }, 600);
-    });
