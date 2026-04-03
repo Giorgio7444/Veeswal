@@ -378,8 +378,36 @@ itemHoverElements.forEach((itemHover) => {
     ];
 
     const preloaderImage = document.getElementById('preloader-sequence-image');
+    const preloaderElement = document.getElementById('preloader');
     let preloaderSequence = [];
     let preloaderFrameIndex = 0;
+    let preloaderClosed = false;
+    let preloaderInterval = null;
+
+    const hidePreloader = () => {
+      if (preloaderClosed) return;
+      preloaderClosed = true;
+
+      if (preloaderInterval) {
+        clearInterval(preloaderInterval);
+      }
+
+      document.body.classList.remove('loading');
+
+      if (!preloaderElement) {
+        return;
+      }
+
+      preloaderElement.classList.add('fade-out');
+
+      preloaderElement.addEventListener('transitionend', () => {
+        preloaderElement.style.display = 'none';
+      }, { once: true });
+
+      setTimeout(() => {
+        preloaderElement.style.display = 'none';
+      }, 800);
+    };
 
     const shuffleFrames = (frames) => {
       const shuffledFrames = [...frames];
@@ -408,7 +436,7 @@ itemHoverElements.forEach((itemHover) => {
       preloaderImage.src = preloaderSequence[0];
     }
 
-    const preloaderInterval = setInterval(() => {
+    preloaderInterval = setInterval(() => {
       if (!preloaderImage || preloaderFrames.length === 0) {
         return;
       }
@@ -422,4 +450,10 @@ itemHoverElements.forEach((itemHover) => {
 
       preloaderImage.src = preloaderSequence[preloaderFrameIndex];
     }, 250);
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hidePreloader, { once: true });
+    } else {
+      hidePreloader();
+    }
 
