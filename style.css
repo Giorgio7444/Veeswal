@@ -102,8 +102,8 @@ body {
       color: var(--quadrary-color); 
       font-weight: 700;
       line-height: 9vw;
-      padding-top: 3.3vw;
-      padding-bottom: 1vw;
+      padding-top: 1vh;
+      padding-bottom: 1vh;
       text-transform: uppercase;
     }
 
@@ -163,6 +163,7 @@ body {
   position: absolute;
   top: 110vh;
   width: 100vw;
+  padding-bottom: 10vh;
   font-weight: 900;  
 }
 
