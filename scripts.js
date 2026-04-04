@@ -414,6 +414,109 @@ const setupMenu = () => {
   });
 };
 
+function setupCustomCursor() {
+  const supportsFinePointer = window.matchMedia('(pointer: fine)').matches;
+  if (!supportsFinePointer) return;
+
+  const cursor = document.createElement('div');
+  cursor.id = 'custom-cursor';
+  document.body.appendChild(cursor);
+
+  const clickableSelector = [
+    'a',
+    'button',
+    '[role="button"]',
+    'input[type="submit"]',
+    'input[type="button"]'
+  ].join(',');
+
+  const hasPointerCursor = (element) => {
+    let current = element;
+
+    while (current && current.nodeType === Node.ELEMENT_NODE) {
+      if (getComputedStyle(current).cursor === 'pointer') {
+        return true;
+      }
+      current = current.parentElement;
+    }
+
+    return false;
+  };
+
+  const isClickableElement = (element) => {
+    if (!element || !(element instanceof Element)) return false;
+    if (element.closest(clickableSelector)) return true;
+    return hasPointerCursor(element);
+  };
+
+  let targetX = 0;
+  let targetY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let animationFrameId = null;
+  let cursorHasPosition = false;
+
+  const renderCursor = () => {
+    currentX += (targetX - currentX) * 0.26;
+    currentY += (targetY - currentY) * 0.26;
+
+    cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
+
+    const isSettled = Math.abs(targetX - currentX) < 0.1 && Math.abs(targetY - currentY) < 0.1;
+    if (isSettled) {
+      animationFrameId = null;
+      return;
+    }
+
+    animationFrameId = window.requestAnimationFrame(renderCursor);
+  };
+
+  const ensureRenderLoop = () => {
+    if (animationFrameId !== null) return;
+    animationFrameId = window.requestAnimationFrame(renderCursor);
+  };
+
+  const moveCursor = (event) => {
+    targetX = event.clientX;
+    targetY = event.clientY;
+
+    if (!cursorHasPosition) {
+      currentX = targetX;
+      currentY = targetY;
+      cursorHasPosition = true;
+      cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
+    } else {
+      ensureRenderLoop();
+    }
+
+    cursor.classList.add('cursor--visible');
+  };
+
+  document.addEventListener('mousemove', moveCursor);
+
+  document.addEventListener('mouseover', (event) => {
+    if (isClickableElement(event.target)) {
+      cursor.classList.add('cursor--active');
+    }
+  });
+
+  document.addEventListener('mouseout', (event) => {
+    const relatedTarget = event.relatedTarget;
+    if (relatedTarget && isClickableElement(relatedTarget)) return;
+
+    if (!isClickableElement(event.target)) return;
+    cursor.classList.remove('cursor--active');
+  });
+
+  document.addEventListener('mouseleave', () => {
+    cursor.classList.remove('cursor--visible');
+  });
+
+  document.addEventListener('mouseenter', () => {
+    cursor.classList.add('cursor--visible');
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeScroll();
   
@@ -421,6 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTitle();
   setupAccordion();
   setupMenu();
+  setupCustomCursor();
 
   const itemHoverElements = document.querySelectorAll(".item-hover");
   itemHoverElements.forEach((itemHover) => {
