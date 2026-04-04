@@ -331,9 +331,11 @@ const setupMenu = () => {
   const menuToggleDelay = 0.5;
   const tl = gsap.timeline({ paused: true });
 
+  tl.set("#menu", { top: "110vh" });
   tl.to("#site-title", speed, { opacity: "0", ease: "power1.inOut" });
+  tl.to("#menu", speed, { top: "15vh", ease: "power1.inOut" }, 0);
   tl.to("#menu-toggle", speed, { y: "-13vh", ease: "power1" }, speed);
-  tl.to(menuItems, { opacity: 1, y: "-95vh", stagger: 0.1 }, `-=${speed / 2}`);
+  tl.to(menuItems, { opacity: 1, stagger: 0.1 }, `-=${speed / 2}`);
 
   const toggleBackground = (hide) => {
     if (!backgroundLayer) return;
