@@ -296,7 +296,7 @@ const setupAccordion = () => {
           top: elementTop - extraOffset,
           behavior: "smooth",
         });
-      }, 450);
+      }, 600);
     });
   });
 };
@@ -403,7 +403,6 @@ const setupMenu = () => {
       gsap.to(menuActiveBanner, {
         opacity: menuToggle.classList.contains("active") ? 1 : 0,
         duration: speed,
-        delay: 0.5,
         ease: "power1.inOut",
       });
     }
