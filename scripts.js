@@ -309,9 +309,10 @@ const setupMenu = () => {
 
   const getMenuToggleOffsets = () => {
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight ?? document.documentElement.clientHeight;
+    const closedOffset = Math.max(0, Math.min(Math.round(viewportHeight - 170), 640));
 
     return {
-      closed: Math.max(0, Math.round(viewportHeight - 200)),
+      closed: closedOffset,
       open: -Math.round(viewportHeight * 0.13),
     };
   };
@@ -365,6 +366,7 @@ const setupMenu = () => {
   }
   window.addEventListener("resize", handleViewportChange);
   window.addEventListener("orientationchange", handleViewportChange);
+  document.addEventListener("fullscreenchange", handleViewportChange);
 
   const toggleBackground = (hide) => {
     if (!backgroundLayer) return;
