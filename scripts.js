@@ -307,6 +307,23 @@ const setupMenu = () => {
   const backgroundLayer = document.querySelector("#background-layer");
   const menuActiveBanner = document.querySelector("#menu-active-banner");
 
+  const getMenuToggleOffsets = () => {
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight ?? document.documentElement.clientHeight;
+
+    return {
+      closed: Math.max(0, Math.round(viewportHeight - 200)),
+      open: -Math.round(viewportHeight * 0.13),
+    };
+  };
+
+  const syncMenuTogglePosition = () => {
+    const offsets = getMenuToggleOffsets();
+
+    gsap.set(menuToggle, {
+      y: menuToggle.classList.contains("active") ? offsets.open : offsets.closed,
+    });
+  };
+
   if (!menuToggle) return;
   if (typeof gsap === 'undefined') {
     // Fallback: keep menu toggle usable without animation library.
@@ -322,7 +339,7 @@ const setupMenu = () => {
     return;
   }
 
-  gsap.set(menuToggle, { y: window.innerHeight - 200 });
+  syncMenuTogglePosition();
   if (menuActiveBanner) {
     gsap.set(menuActiveBanner, { opacity: 0 });
   }
@@ -334,8 +351,20 @@ const setupMenu = () => {
   tl.set("#menu", { top: "110vh" });
   tl.to("#site-title", speed, { opacity: "0", ease: "power1.inOut" });
   tl.to("#menu", speed, { top: "15vh", ease: "power1.inOut" }, 0);
-  tl.to("#menu-toggle", speed, { y: "-13vh", ease: "power1" }, speed);
+  tl.to("#menu-toggle", speed, { y: getMenuToggleOffsets().open, ease: "power1" }, speed);
   tl.to(menuItems, { opacity: 1, stagger: 0.1 }, `-=${speed / 2}`);
+
+  const handleViewportChange = () => {
+    if (tl.isActive()) return;
+    syncMenuTogglePosition();
+  };
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", handleViewportChange);
+    window.visualViewport.addEventListener("scroll", handleViewportChange);
+  }
+  window.addEventListener("resize", handleViewportChange);
+  window.addEventListener("orientationchange", handleViewportChange);
 
   const toggleBackground = (hide) => {
     if (!backgroundLayer) return;

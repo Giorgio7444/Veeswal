@@ -176,7 +176,7 @@ img {
 #menu-toggle {
   position: fixed;
   color: var(--quadrary-color);
-  top: 18svh;
+  top: calc(18svh + env(safe-area-inset-top, 0px));
   margin-left: 1vw;
   z-index: 1000;
   font-size:calc(22px + 1.2vw);
