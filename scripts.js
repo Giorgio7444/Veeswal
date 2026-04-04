@@ -422,6 +422,11 @@ function setupCustomCursor() {
   cursor.id = 'custom-cursor';
   document.body.appendChild(cursor);
 
+  const systemCursorZoneSelector = [
+    '#silktide-wrapper',
+    '#preloader'
+  ].join(',');
+
   const clickableSelector = [
     'a',
     'button',
@@ -447,6 +452,21 @@ function setupCustomCursor() {
     if (!element || !(element instanceof Element)) return false;
     if (element.closest(clickableSelector)) return true;
     return hasPointerCursor(element);
+  };
+
+  const isSystemCursorZone = (element) => {
+    if (!element || !(element instanceof Element)) return false;
+    return Boolean(element.closest(systemCursorZoneSelector));
+  };
+
+  const deactivateCustomCursor = () => {
+    document.body.classList.remove('cursor-custom-active');
+    cursor.classList.remove('cursor--visible');
+    cursor.classList.remove('cursor--active');
+  };
+
+  const activateCustomCursor = () => {
+    document.body.classList.add('cursor-custom-active');
   };
 
   let targetX = 0;
@@ -477,6 +497,24 @@ function setupCustomCursor() {
   };
 
   const moveCursor = (event) => {
+    const isOutOfViewport =
+      event.clientX < 0 ||
+      event.clientY < 0 ||
+      event.clientX >= window.innerWidth ||
+      event.clientY >= window.innerHeight;
+
+    if (isOutOfViewport) {
+      deactivateCustomCursor();
+      return;
+    }
+
+    if (isSystemCursorZone(event.target)) {
+      deactivateCustomCursor();
+      return;
+    }
+
+    activateCustomCursor();
+
     targetX = event.clientX;
     targetY = event.clientY;
 
@@ -492,12 +530,41 @@ function setupCustomCursor() {
     cursor.classList.add('cursor--visible');
   };
 
-  document.addEventListener('mousemove', moveCursor);
+  document.addEventListener('pointermove', moveCursor, { passive: true });
+  document.addEventListener('mousemove', moveCursor, { passive: true });
 
-  document.addEventListener('mouseover', (event) => {
+  document.addEventListener('pointerover', (event) => {
+    if (isSystemCursorZone(event.target)) {
+      deactivateCustomCursor();
+      return;
+    }
+
+    activateCustomCursor();
+
     if (isClickableElement(event.target)) {
       cursor.classList.add('cursor--active');
     }
+  });
+
+  document.addEventListener('mouseover', (event) => {
+    if (isSystemCursorZone(event.target)) {
+      deactivateCustomCursor();
+      return;
+    }
+
+    activateCustomCursor();
+
+    if (isClickableElement(event.target)) {
+      cursor.classList.add('cursor--active');
+    }
+  });
+
+  document.addEventListener('pointerout', (event) => {
+    const relatedTarget = event.relatedTarget;
+    if (relatedTarget && isClickableElement(relatedTarget)) return;
+
+    if (!isClickableElement(event.target)) return;
+    cursor.classList.remove('cursor--active');
   });
 
   document.addEventListener('mouseout', (event) => {
@@ -508,12 +575,27 @@ function setupCustomCursor() {
     cursor.classList.remove('cursor--active');
   });
 
-  document.addEventListener('mouseleave', () => {
-    cursor.classList.remove('cursor--visible');
+  document.addEventListener('pointerleave', () => {
+    deactivateCustomCursor();
   });
 
-  document.addEventListener('mouseenter', () => {
-    cursor.classList.add('cursor--visible');
+  document.addEventListener('mouseleave', () => {
+    deactivateCustomCursor();
+  });
+
+  window.addEventListener('mouseout', (event) => {
+    if (event.relatedTarget) return;
+    deactivateCustomCursor();
+  });
+
+  window.addEventListener('blur', () => {
+    deactivateCustomCursor();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') {
+      deactivateCustomCursor();
+    }
   });
 }
 
