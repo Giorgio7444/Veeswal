@@ -27,6 +27,43 @@ function setScrollState(state) {
 
 const masonryLayoutState = new WeakMap();
 
+const PRELOADER_FRAMES = [
+  'assets/Preloaders/Tavola disegno 17gel.svg',
+  'assets/Preloaders/Tavola disegno 18gel.svg',
+  'assets/Preloaders/Tavola disegno 19gel.svg',
+  'assets/Preloaders/Tavola disegno 20gel.svg',
+  'assets/Preloaders/Tavola disegno 21gel.svg',
+  'assets/Preloaders/Tavola disegno 22gel.svg',
+  'assets/Preloaders/Tavola disegno 23gel.svg',
+  'assets/Preloaders/Tavola disegno 24gel.svg',
+  'assets/Preloaders/Tavola disegno 25gel.svg',
+  'assets/Preloaders/Tavola disegno 26gel.svg',
+  'assets/Preloaders/Tavola disegno 27gel.svg',
+  'assets/Preloaders/Tavola disegno 28gel.svg',
+  'assets/Preloaders/Tavola disegno 29gel.svg',
+  'assets/Preloaders/Tavola disegno 30gel.svg'
+];
+
+let preloaderAssetsWarmed = false;
+const preloaderImageCache = [];
+
+function warmPreloaderAssets() {
+  if (preloaderAssetsWarmed) return;
+  preloaderAssetsWarmed = true;
+
+  PRELOADER_FRAMES.forEach((frameSrc) => {
+    const frameImage = new Image();
+    frameImage.loading = 'eager';
+    frameImage.decoding = 'sync';
+    frameImage.fetchPriority = 'high';
+    frameImage.src = frameSrc;
+    preloaderImageCache.push(frameImage);
+  });
+}
+
+// Start downloading preloader frames as early as possible.
+warmPreloaderAssets();
+
 function initializeScroll() {
   const savedScroll = getScrollState();
   
@@ -384,24 +421,9 @@ function initPreloader() {
   const preloaderElement = document.getElementById('preloader');
   if (!preloaderImage || !preloaderElement) return;
 
-  document.body.classList.add('loading');
+  warmPreloaderAssets();
 
-  const preloaderFrames = [
-    'assets/Preloaders/Tavola disegno 17gel.svg',
-    'assets/Preloaders/Tavola disegno 18gel.svg',
-    'assets/Preloaders/Tavola disegno 19gel.svg',
-    'assets/Preloaders/Tavola disegno 20gel.svg',
-    'assets/Preloaders/Tavola disegno 21gel.svg',
-    'assets/Preloaders/Tavola disegno 22gel.svg',
-    'assets/Preloaders/Tavola disegno 23gel.svg',
-    'assets/Preloaders/Tavola disegno 24gel.svg',
-    'assets/Preloaders/Tavola disegno 25gel.svg',
-    'assets/Preloaders/Tavola disegno 26gel.svg',
-    'assets/Preloaders/Tavola disegno 27gel.svg',
-    'assets/Preloaders/Tavola disegno 28gel.svg',
-    'assets/Preloaders/Tavola disegno 29gel.svg',
-    'assets/Preloaders/Tavola disegno 30gel.svg'
-  ];
+  document.body.classList.add('loading');
 
   let preloaderSequence = [];
   let preloaderFrameIndex = 0;
@@ -441,7 +463,7 @@ function initPreloader() {
   };
 
   const buildRandomSequence = (previousFrame) => {
-    const randomSequence = shuffleFrames(preloaderFrames);
+    const randomSequence = shuffleFrames(PRELOADER_FRAMES);
 
     if (previousFrame && randomSequence[0] === previousFrame && randomSequence.length > 1) {
       [randomSequence[0], randomSequence[1]] = [randomSequence[1], randomSequence[0]];
@@ -457,7 +479,7 @@ function initPreloader() {
   }
 
   preloaderInterval = setInterval(() => {
-    if (preloaderFrames.length === 0) {
+    if (PRELOADER_FRAMES.length === 0) {
       return;
     }
 
