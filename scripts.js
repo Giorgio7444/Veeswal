@@ -46,9 +46,27 @@ const PRELOADER_FRAMES = [
 
 let preloaderAssetsWarmed = false;
 const preloaderImageCache = [];
+let preloaderAssetsReadyPromise = null;
+
+function whenImageReady(image) {
+  if (!image) return Promise.resolve();
+
+  if (typeof image.decode === 'function') {
+    return image.decode().catch(() => {});
+  }
+
+  if (image.complete) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    image.addEventListener('load', resolve, { once: true });
+    image.addEventListener('error', resolve, { once: true });
+  });
+}
 
 function warmPreloaderAssets() {
-  if (preloaderAssetsWarmed) return;
+  if (preloaderAssetsWarmed) return preloaderAssetsReadyPromise;
   preloaderAssetsWarmed = true;
 
   PRELOADER_FRAMES.forEach((frameSrc) => {
@@ -59,6 +77,12 @@ function warmPreloaderAssets() {
     frameImage.src = frameSrc;
     preloaderImageCache.push(frameImage);
   });
+
+  preloaderAssetsReadyPromise = Promise.allSettled(
+    preloaderImageCache.map((frameImage) => whenImageReady(frameImage))
+  );
+
+  return preloaderAssetsReadyPromise;
 }
 
 // Start downloading preloader frames as early as possible.
@@ -635,7 +659,7 @@ function initPreloader() {
   const preloaderElement = document.getElementById('preloader');
   if (!preloaderImage || !preloaderElement) return;
 
-  warmPreloaderAssets();
+  const assetsReadyPromise = warmPreloaderAssets() || Promise.resolve();
 
   document.body.classList.add('loading');
 
@@ -643,6 +667,23 @@ function initPreloader() {
   let preloaderFrameIndex = 0;
   let preloaderClosed = false;
   let preloaderInterval = null;
+  let pageLoaded = document.readyState === 'complete';
+  let preloaderFramesReady = false;
+  const preloaderStartedAt = Date.now();
+  const minDisplayTime = 900;
+
+  const tryHidePreloader = () => {
+    if (preloaderClosed) return;
+    if (!pageLoaded || !preloaderFramesReady) return;
+
+    const elapsed = Date.now() - preloaderStartedAt;
+    if (elapsed < minDisplayTime) {
+      setTimeout(tryHidePreloader, minDisplayTime - elapsed);
+      return;
+    }
+
+    hidePreloader();
+  };
 
   const hidePreloader = () => {
     if (preloaderClosed) return;
@@ -707,9 +748,22 @@ function initPreloader() {
     preloaderImage.src = preloaderSequence[preloaderFrameIndex];
   }, 250);
 
-  // Close on full page load, with timeout fallback to avoid deadlocks.
-  window.addEventListener('load', hidePreloader, { once: true });
-  setTimeout(hidePreloader, 3500);
+  assetsReadyPromise.then(() => {
+    preloaderFramesReady = true;
+    tryHidePreloader();
+  });
+
+  if (pageLoaded) {
+    tryHidePreloader();
+  } else {
+    window.addEventListener('load', () => {
+      pageLoaded = true;
+      tryHidePreloader();
+    }, { once: true });
+  }
+
+  // Safety fallback in case some browser never resolves decode/load states.
+  setTimeout(hidePreloader, 7000);
 }
 
 if (document.readyState === 'loading') {
