@@ -128,6 +128,12 @@ body {
       margin-top: 4rem;
         }
 
+    .short {
+      max-width: 70vw;
+      padding-bottom: 2rem;
+      padding-top: 2rem;
+    }
+
     .contentps {
       color: var(--secondary-color);
       white-space: pre-line;
@@ -356,6 +362,24 @@ color: var(--secondary-color);
 }
 
 .cornici-grid-2x3 .img img {
+  width: 100%;
+  height: auto;
+}
+
+.pasta-grid-2x1 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.pasta-grid-2x1 .img {
+  margin: 0;
+  padding: 0;
+}
+
+.pasta-grid-2x1 .img img {
   width: 100%;
   height: auto;
 }
