@@ -156,16 +156,12 @@ function getMasonryDataFromItem(item) {
   const masonryContainer = item.querySelector(masonrySelector);
   if (!masonryContainer) return null;
 
-  // Support both spellings to avoid runtime breakage during refactors.
   const masonryConfig =
-    (typeof masonrySettings !== 'undefined' && masonrySettings) ||
-    (typeof mansonrySettings !== 'undefined' && mansonrySettings) ||
-    window.masonrySettings ||
-    window.mansonrySettings;
-  const masonrySettings = masonryConfig && masonryConfig[masonrySelector];
-  if (!masonrySettings) return null;
+    window.masonrySettings || null;
+  const masonryOptions = masonryConfig && masonryConfig[masonrySelector];
+  if (!masonryOptions) return null;
 
-  return { button, masonryContainer, masonrySettings };
+  return { button, masonryContainer, masonrySettings: masonryOptions };
 }
 
 function bindMasonryImageEvents(masonryContainer, masonry, item) {

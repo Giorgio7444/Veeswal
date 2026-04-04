@@ -261,8 +261,8 @@ color: var(--secondary-color);
 
 .grid-item-poster {
   width: 33.3333%;
-  padding-right: 1vw;
-  margin-bottom: 1vw;
+  padding-right: 0.5vw;
+  margin-bottom: 0.45vw;
   box-sizing: border-box;
 }
 
