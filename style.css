@@ -1,10 +1,10 @@
 :root {
-  --primary-color: #0d0d0d;
-  --secondary-color: #fcfcfc;
+  --primary-color: #000000;
+  --secondary-color: #ffffff;
   --tertiary-color: #edbc07; 
   --quadrary-color: #b3b3b3;
   --font-family: 'itc-avant-garde-gothic-pro';
-  --font-big: 12.5vw;
+  --font-big: 12vw;
 }
 
 body {
@@ -119,11 +119,13 @@ body {
     }
 
     .content-text {
-      max-width: 80vw;
+      max-width: 100vw;
       font-size:calc(14px + 1.5vw);
       line-height: calc(20px + 1.5vw);
       font-weight: 500;
       font-kerning: auto;
+      margin-bottom: 2rem;
+      margin-top: 4rem;
         }
 
     .contentps {
@@ -156,6 +158,12 @@ body {
   top: 110vh;
   width: 100vw;
   font-weight: 900;  
+}
+
+img {
+  display: block;
+  width: 100vw;
+  height: auto;
 }
 
 #menu-toggle {
@@ -221,7 +229,8 @@ color: var(--secondary-color);
 .grid-poster,
 .grid-pasta,
 .grid-still,
-.grid-olivetti {
+.grid-olivetti,
+.grid-veeswal {
   position: relative;
   display: block;
 }
@@ -229,7 +238,8 @@ color: var(--secondary-color);
 .grid-sizer-poster,
 .grid-sizer-pasta,
 .grid-sizer-still,
-.grid-sizer-olivetti {
+.grid-sizer-olivetti,
+.grid-sizer-veeswal {
   position: absolute;
   top: 0;
   left: 0;
@@ -266,8 +276,6 @@ color: var(--secondary-color);
 
 .grid-item-pasta {
   width: 33.3333%;
-  padding-left: 1vw;
-  padding-bottom: 0.9vw;
   box-sizing: border-box;
 }
 
@@ -317,6 +325,65 @@ color: var(--secondary-color);
 
 .grid-item-olivetti--50wide {
   width: 50%;
+}
+
+.olivetti-grid-2x2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.olivetti-grid-2x2 .grid-item-olivetti {
+  width: 100%;
+  padding-left: 0;
+  padding-bottom: 0;
+}
+
+.olivetti-grid-2x2 .grid-item-olivetti a {
+  display: block;
+}
+
+.cornici-grid-2x3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.cornici-grid-2x3 .img {
+  margin: 0;
+  padding: 0;
+}
+
+.cornici-grid-2x3 .img img {
+  width: 100%;
+  height: auto;
+}
+
+.grid-sizer-veeswal {
+  width: 50%;
+}
+
+.grid-item-veeswal {
+  width: 50%;
+  padding-left: 1vw;
+  padding-bottom: 0.9vw;
+  box-sizing: border-box;
+}
+
+.grid-item-veeswal img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.grid-item-veeswal a {
+  display: block;
+}
+
+.grid-item-veeswal--100wide {
+  width: 100%;
+  padding-left: 0;
 }
 
 .item-hover:hover{

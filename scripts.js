@@ -119,9 +119,12 @@ function getMasonryDataFromItem(item) {
   const masonryContainer = item.querySelector(masonrySelector);
   if (!masonryContainer) return null;
 
-  const masonryConfig = typeof mansonrySettings !== 'undefined'
-    ? mansonrySettings
-    : window.mansonrySettings;
+  // Support both spellings to avoid runtime breakage during refactors.
+  const masonryConfig =
+    (typeof masonrySettings !== 'undefined' && masonrySettings) ||
+    (typeof mansonrySettings !== 'undefined' && mansonrySettings) ||
+    window.masonrySettings ||
+    window.mansonrySettings;
   const masonrySettings = masonryConfig && masonryConfig[masonrySelector];
   if (!masonrySettings) return null;
 
@@ -153,6 +156,10 @@ function bindMasonryImageEvents(masonryContainer, masonry, item) {
 }
 
 function ensureMasonryForItem(item) {
+  if (typeof Masonry === 'undefined') {
+    return null;
+  }
+
   const data = getMasonryDataFromItem(item);
   if (!data) return null;
 
@@ -268,6 +275,19 @@ const setupMenu = () => {
   const menuActiveBanner = document.querySelector("#menu-active-banner");
 
   if (!menuToggle) return;
+  if (typeof gsap === 'undefined') {
+    // Fallback: keep menu toggle usable without animation library.
+    menuToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      menuToggle.classList.toggle("active");
+      const isActive = menuToggle.classList.contains("active");
+      document.body.style.overflowY = isActive ? "auto" : "hidden";
+      document.body.classList.toggle("no-scroll", !isActive);
+      setScrollState(isActive ? "auto" : "hidden");
+      menuToggle.textContent = isActive ? "GO BACK!" : "LET'S GO!";
+    });
+    return;
+  }
 
   gsap.set(menuToggle, { y: window.innerHeight - 200 });
   if (menuActiveBanner) {
@@ -337,6 +357,17 @@ document.addEventListener("DOMContentLoaded", () => {
   setupTitle();
   setupAccordion();
   setupMenu();
+
+  const itemHoverElements = document.querySelectorAll(".item-hover");
+  itemHoverElements.forEach((itemHover) => {
+    itemHover.addEventListener("mouseenter", () => {
+      itemHover.classList.add("highlight");
+    });
+    itemHover.addEventListener("mouseleave", () => {
+      itemHover.classList.remove("highlight");
+    });
+  });
+
   console.log("Ciao! Il sito in cui ti trovi l'ho progettato io, non sono un dev ma ho voluto mettermi alla prova e ho imparato molto da questa esperienza");
 });
 
@@ -348,112 +379,106 @@ window.addEventListener("load", () => {
   }
 });
 
-const itemHoverElements = document.querySelectorAll(".item-hover");
-itemHoverElements.forEach((itemHover) => {
-  itemHover.addEventListener("mouseenter", () => {
-    itemHover.classList.add("highlight");
-  });
-  itemHover.addEventListener("mouseleave", () => {
-    itemHover.classList.remove("highlight");
-  });
-});
+function initPreloader() {
+  const preloaderImage = document.getElementById('preloader-sequence-image');
+  const preloaderElement = document.getElementById('preloader');
+  if (!preloaderImage || !preloaderElement) return;
 
-    document.body.classList.add('loading');
+  document.body.classList.add('loading');
 
-    const preloaderFrames = [
-      'assets/Preloaders/Tavola disegno 17gel.svg',
-      'assets/Preloaders/Tavola disegno 18gel.svg',
-      'assets/Preloaders/Tavola disegno 19gel.svg',
-      'assets/Preloaders/Tavola disegno 20gel.svg',
-      'assets/Preloaders/Tavola disegno 21gel.svg',
-      'assets/Preloaders/Tavola disegno 22gel.svg',
-      'assets/Preloaders/Tavola disegno 23gel.svg',
-      'assets/Preloaders/Tavola disegno 24gel.svg',
-      'assets/Preloaders/Tavola disegno 25gel.svg',
-      'assets/Preloaders/Tavola disegno 26gel.svg',
-      'assets/Preloaders/Tavola disegno 27gel.svg',
-      'assets/Preloaders/Tavola disegno 28gel.svg',
-      'assets/Preloaders/Tavola disegno 29gel.svg',
-      'assets/Preloaders/Tavola disegno 30gel.svg'
-    ];
+  const preloaderFrames = [
+    'assets/Preloaders/Tavola disegno 17gel.svg',
+    'assets/Preloaders/Tavola disegno 18gel.svg',
+    'assets/Preloaders/Tavola disegno 19gel.svg',
+    'assets/Preloaders/Tavola disegno 20gel.svg',
+    'assets/Preloaders/Tavola disegno 21gel.svg',
+    'assets/Preloaders/Tavola disegno 22gel.svg',
+    'assets/Preloaders/Tavola disegno 23gel.svg',
+    'assets/Preloaders/Tavola disegno 24gel.svg',
+    'assets/Preloaders/Tavola disegno 25gel.svg',
+    'assets/Preloaders/Tavola disegno 26gel.svg',
+    'assets/Preloaders/Tavola disegno 27gel.svg',
+    'assets/Preloaders/Tavola disegno 28gel.svg',
+    'assets/Preloaders/Tavola disegno 29gel.svg',
+    'assets/Preloaders/Tavola disegno 30gel.svg'
+  ];
 
-    const preloaderImage = document.getElementById('preloader-sequence-image');
-    const preloaderElement = document.getElementById('preloader');
-    let preloaderSequence = [];
-    let preloaderFrameIndex = 0;
-    let preloaderClosed = false;
-    let preloaderInterval = null;
+  let preloaderSequence = [];
+  let preloaderFrameIndex = 0;
+  let preloaderClosed = false;
+  let preloaderInterval = null;
 
-    const hidePreloader = () => {
-      if (preloaderClosed) return;
-      preloaderClosed = true;
+  const hidePreloader = () => {
+    if (preloaderClosed) return;
+    preloaderClosed = true;
 
-      if (preloaderInterval) {
-        clearInterval(preloaderInterval);
-      }
-
-      document.body.classList.remove('loading');
-
-      if (!preloaderElement) {
-        return;
-      }
-
-      preloaderElement.classList.add('fade-out');
-
-      preloaderElement.addEventListener('transitionend', () => {
-        preloaderElement.style.display = 'none';
-      }, { once: true });
-
-      setTimeout(() => {
-        preloaderElement.style.display = 'none';
-      }, 800);
-    };
-
-    const shuffleFrames = (frames) => {
-      const shuffledFrames = [...frames];
-
-      for (let index = shuffledFrames.length - 1; index > 0; index -= 1) {
-        const randomIndex = Math.floor(Math.random() * (index + 1));
-        [shuffledFrames[index], shuffledFrames[randomIndex]] = [shuffledFrames[randomIndex], shuffledFrames[index]];
-      }
-
-      return shuffledFrames;
-    };
-
-    const buildRandomSequence = (previousFrame) => {
-      const randomSequence = shuffleFrames(preloaderFrames);
-
-      if (previousFrame && randomSequence[0] === previousFrame && randomSequence.length > 1) {
-        [randomSequence[0], randomSequence[1]] = [randomSequence[1], randomSequence[0]];
-      }
-
-      return randomSequence;
-    };
-
-    preloaderSequence = buildRandomSequence();
-
-    if (preloaderImage && preloaderSequence.length > 0) {
-      preloaderImage.src = preloaderSequence[0];
+    if (preloaderInterval) {
+      clearInterval(preloaderInterval);
+      preloaderInterval = null;
     }
 
-    preloaderInterval = setInterval(() => {
-      if (!preloaderImage || preloaderFrames.length === 0) {
-        return;
-      }
+    document.body.classList.remove('loading');
+    preloaderElement.classList.add('fade-out');
 
-      preloaderFrameIndex += 1;
+    preloaderElement.addEventListener('transitionend', () => {
+      preloaderElement.style.display = 'none';
+    }, { once: true });
 
-      if (preloaderFrameIndex >= preloaderSequence.length) {
-        preloaderSequence = buildRandomSequence(preloaderSequence[preloaderSequence.length - 1]);
-        preloaderFrameIndex = 0;
-      }
+    setTimeout(() => {
+      preloaderElement.style.display = 'none';
+    }, 800);
+  };
 
-      preloaderImage.src = preloaderSequence[preloaderFrameIndex];
-    }, 250);
+  const shuffleFrames = (frames) => {
+    const shuffledFrames = [...frames];
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', hidePreloader, { once: true });
-    } else {
-      hidePreloader();
+    for (let index = shuffledFrames.length - 1; index > 0; index -= 1) {
+      const randomIndex = Math.floor(Math.random() * (index + 1));
+      [shuffledFrames[index], shuffledFrames[randomIndex]] = [shuffledFrames[randomIndex], shuffledFrames[index]];
     }
+
+    return shuffledFrames;
+  };
+
+  const buildRandomSequence = (previousFrame) => {
+    const randomSequence = shuffleFrames(preloaderFrames);
+
+    if (previousFrame && randomSequence[0] === previousFrame && randomSequence.length > 1) {
+      [randomSequence[0], randomSequence[1]] = [randomSequence[1], randomSequence[0]];
+    }
+
+    return randomSequence;
+  };
+
+  preloaderSequence = buildRandomSequence();
+
+  if (preloaderSequence.length > 0) {
+    preloaderImage.src = preloaderSequence[0];
+  }
+
+  preloaderInterval = setInterval(() => {
+    if (preloaderFrames.length === 0) {
+      return;
+    }
+
+    preloaderFrameIndex += 1;
+
+    if (preloaderFrameIndex >= preloaderSequence.length) {
+      preloaderSequence = buildRandomSequence(preloaderSequence[preloaderSequence.length - 1]);
+      preloaderFrameIndex = 0;
+    }
+
+    preloaderImage.src = preloaderSequence[preloaderFrameIndex];
+  }, 250);
+
+  // Close on full page load, with timeout fallback to avoid deadlocks.
+  window.addEventListener('load', hidePreloader, { once: true });
+  setTimeout(hidePreloader, 3500);
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPreloader, { once: true });
+} else {
+  initPreloader();
+}
 
