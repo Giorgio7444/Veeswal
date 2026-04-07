@@ -333,7 +333,7 @@ const setupMenu = () => {
 
   const getMenuToggleOffsets = () => {
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight ?? document.documentElement.clientHeight;
-    const closedOffset = Math.max(0, Math.min(Math.round(viewportHeight - 170), 640));
+    const closedOffset = Math.max(0, Math.min(Math.round(viewportHeight - 170), 660));
 
     return {
       closed: closedOffset,

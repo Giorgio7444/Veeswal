@@ -124,7 +124,10 @@ body {
   color: var(--quadrary-color);
   font-size: 11.5vw;
   line-height: 9.5vw;
-  margin-left: 0.8vw;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  white-space: nowrap;
   font-weight: 700;
   position: fixed;
   padding-top: 1svw;
@@ -217,7 +220,8 @@ img {
   position: fixed;
   color: var(--quadrary-color);
   top: calc(18svh + env(safe-area-inset-top, 0px));
-  margin-left: 1vw;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
   font-size:calc(22px + 1.2vw);
   line-height: 30%;
@@ -451,7 +455,12 @@ color: var(--secondary-color);
   padding-left: 0;
 }
 
-.item-hover:hover{
+.item-hover {
+  pointer-events: none;
+}
+
+.menu-opener:hover .item-hover,
+.menu-opener:focus-visible .item-hover {
   color: var(--secondary-color); 
   transition: all 200ms ease-in;
 }
