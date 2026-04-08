@@ -119,12 +119,45 @@ body {
   display: flex;
 }
 
+#hero-bg-name {
+  position: absolute;
+  inset: 0;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  font-weight: 500;
+  font-size: 20vw;
+  line-height: 0.8;
+  letter-spacing: 0.02em;
+  z-index: 1;
+  pointer-events: none;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  #hero-bg-name {
+    padding-bottom: 60vw;
+  }
+}
+
+@media (max-width: 600px) {
+  #hero-bg-name {
+    padding-bottom: 70vw;
+  }
+}
+
 #alb {
+  position: relative;
+  z-index: 2;
   height: 100svh;
   min-height: 100svh;
   width: auto;
   object-fit: cover;
   object-position: center;
+  filter: drop-shadow(0 -0.5vh 0.6vh rgba(0, 1, 0, 0.2));
 }
 
 #hero-entry.is-hidden {
@@ -141,11 +174,12 @@ body {
     button {
       font-size: var(--font-big);
       color: var(--quadrary-color); 
-      font-weight: 700;
+      font-weight: 500;
       line-height: 9vw;
       padding-top: 1vh;
       padding-bottom: 1vh;
       text-transform: uppercase;
+      text-align: center;
     }
 
     &.active {

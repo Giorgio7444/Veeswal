@@ -295,10 +295,12 @@ const setupAccordion = () => {
 const setupMenu = () => {
   const heroEntry = document.querySelector('#hero-entry');
   const heroEntryImage = document.querySelector('#alb');
+  const heroBgName = document.querySelector('#hero-bg-name');
   const goBackWrap = document.querySelector('#go-back-wrap');
   const goBackButton = document.querySelector('#go-back-button');
   const menuItems = document.querySelectorAll("#menu .item");
-  if (!heroEntry || !heroEntryImage || !goBackWrap || !goBackButton) return;
+  if (!heroEntry || !heroEntryImage || !heroBgName || !goBackWrap || !goBackButton) return;
+  let menuIsOpen = false;
 
   const resetAccordionPanels = () => {
     const buttons = document.querySelectorAll('.accordion button');
@@ -317,6 +319,7 @@ const setupMenu = () => {
   };
 
   const setMenuOpenState = (isOpen) => {
+    menuIsOpen = isOpen;
     heroEntry.classList.toggle('is-hidden', isOpen);
     goBackWrap.classList.toggle('active', isOpen);
     goBackWrap.style.pointerEvents = 'none';
@@ -326,6 +329,7 @@ const setupMenu = () => {
 
   if (typeof gsap === 'undefined') {
     heroEntry.style.transform = 'translateY(0)';
+    heroBgName.style.opacity = '1';
     document.getElementById('menu').style.top = '110vh';
     menuItems.forEach((item) => {
       item.style.opacity = '0';
@@ -338,6 +342,7 @@ const setupMenu = () => {
 
     const openMenuFallback = () => {
       heroEntry.style.transform = 'translateY(-110%)';
+      heroBgName.style.opacity = '0';
       document.getElementById('menu').style.top = '15vh';
       menuItems.forEach((item) => {
         item.style.opacity = '1';
@@ -350,6 +355,7 @@ const setupMenu = () => {
 
     const closeMenuFallback = () => {
       heroEntry.style.transform = 'translateY(0)';
+      heroBgName.style.opacity = '1';
       document.getElementById('menu').style.top = '110vh';
       menuItems.forEach((item) => {
         item.style.opacity = '0';
@@ -368,6 +374,7 @@ const setupMenu = () => {
   }
 
   gsap.set(heroEntry, { y: '0%' });
+  gsap.set(heroBgName, { opacity: 1 });
   gsap.set(goBackWrap, { y: '-130%', opacity: 0 });
   gsap.set(goBackButton, { pointerEvents: 'none' });
   gsap.set('#menu', { top: '110vh' });
@@ -377,12 +384,13 @@ const setupMenu = () => {
   const tl = gsap.timeline({ paused: true });
 
   tl.to(heroEntry, { y: '-110%', duration: speed, ease: 'power1.inOut' }, 0);
+  tl.to(heroBgName, { opacity: 0, duration: speed * 0.7, ease: 'power1.out' }, 0);
   tl.to('#menu', { top: '15vh', duration: speed, ease: 'power1.inOut' }, 0);
   tl.to(goBackWrap, { y: '0%', opacity: 1, duration: speed, ease: 'power1.inOut' }, speed * 0.4);
   tl.to(menuItems, { opacity: 1, stagger: 0.1 }, `-=${speed / 2}`);
 
   const openMenu = () => {
-    if (tl.isActive() || tl.progress() === 1) return;
+    if (tl.isActive() || menuIsOpen) return;
     tl.play();
     document.body.classList.remove('no-scroll');
     document.body.style.overflowY = 'auto';
@@ -392,10 +400,12 @@ const setupMenu = () => {
 
   const closeTl = gsap.timeline({ paused: true });
   closeTl.to(heroEntry, { y: '0%', duration: speed, ease: 'power1.inOut' }, 0);
+  closeTl.to(heroBgName, { opacity: 1, duration: speed * 0.7, ease: 'power1.in' }, 0);
   closeTl.to('#menu', { top: '110vh', duration: speed, ease: 'power1.inOut' }, 0);
   closeTl.to(goBackWrap, { y: '-130%', opacity: 0, duration: speed, ease: 'power1.inOut' }, 0);
   closeTl.to(menuItems, { opacity: 0, duration: speed, ease: 'power1.inOut' }, 0);
   closeTl.eventCallback('onComplete', () => {
+    tl.progress(0).pause();
     document.body.classList.add('no-scroll');
     document.body.style.overflowY = 'hidden';
     setScrollState('hidden');
@@ -414,7 +424,8 @@ const setupMenu = () => {
 
   window.addEventListener('resize', () => {
     if (tl.isActive()) return;
-    gsap.set(heroEntry, { y: tl.progress() === 1 ? '-110%' : '0%' });
+    gsap.set(heroEntry, { y: menuIsOpen ? '-110%' : '0%' });
+    gsap.set(heroBgName, { opacity: menuIsOpen ? 0 : 1 });
   });
 
   resetAccordionPanels();
