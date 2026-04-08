@@ -287,7 +287,7 @@ const setupAccordion = () => {
           top: elementTop - extraOffset,
           behavior: "smooth",
         });
-      }, 600);
+      }, 700);
     });
   });
 };
