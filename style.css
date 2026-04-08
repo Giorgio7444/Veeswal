@@ -21,8 +21,6 @@ body {
     cursor: none !important;
   }
 
-  body.cursor-custom-active #silktide-wrapper,
-  body.cursor-custom-active #silktide-wrapper *,
   body.cursor-custom-active #preloader,
   body.cursor-custom-active #preloader * {
     cursor: auto !important;

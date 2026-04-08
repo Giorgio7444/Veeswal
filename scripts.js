@@ -444,7 +444,6 @@ function setupCustomCursor() {
   document.body.appendChild(cursor);
 
   const systemCursorZoneSelector = [
-    '#silktide-wrapper',
     '#preloader'
   ].join(',');
 
