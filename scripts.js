@@ -10,15 +10,6 @@ function isLocalStorageAvailable() {
   }
 }
 
-
-function getScrollState() {
-  if (isLocalStorageAvailable()) {
-    return localStorage.getItem("scroll-enabled");
-  }
-  return null;
-}
-
-
 function setScrollState(state) {
   if (isLocalStorageAvailable()) {
     localStorage.setItem("scroll-enabled", state);
@@ -89,21 +80,9 @@ function warmPreloaderAssets() {
 warmPreloaderAssets();
 
 function initializeScroll() {
-  const savedScroll = getScrollState();
-  
-  if (!savedScroll) {
-    document.body.classList.add("no-scroll");
-    document.body.style.overflowY = "hidden";
-    setScrollState("hidden");
-  } else if (savedScroll === "auto") {
-    // Se esplicitamente abilitato, abilita scroll
-    document.body.style.overflowY = "auto";
-    document.body.classList.remove("no-scroll");
-  } else {
-    // Default: blocca scroll
-    document.body.classList.add("no-scroll");
-    document.body.style.overflowY = "hidden";
-  }
+  document.body.classList.add('no-scroll');
+  document.body.style.overflowY = 'hidden';
+  setScrollState('hidden');
 }
 
 function prepareGalleryImages() {
@@ -253,18 +232,6 @@ function openAccordionItem(item) {
   content.style.maxHeight = content.scrollHeight + 'px';
 }
 
-const setupTitle = () => {
-  const letter = document.querySelector("#site-title .letter");
-  if (!letter) return;
-  const letters = ["benvenuta nel", "benvenute nel", "benvenuti nel", "benvenuto nel", "benvenutu nel"];
-  let counter = 0;
-  setInterval(() => {
-    letter.textContent = letters[counter];
-    counter++;
-    if (counter >= letters.length) counter = 0;
-  }, 600);
-};
-
 const setupAccordion = () => {
   const accordion = document.querySelector(".accordion");
   if (!accordion) return;
@@ -315,7 +282,7 @@ const setupAccordion = () => {
 
       setTimeout(() => {
         const elementTop = button.getBoundingClientRect().top + window.scrollY;
-        const extraOffset = window.innerHeight * 0.11;
+        const extraOffset = window.innerHeight * 0.08;
         window.scrollTo({
           top: elementTop - extraOffset,
           behavior: "smooth",
@@ -326,117 +293,128 @@ const setupAccordion = () => {
 };
 
 const setupMenu = () => {
-  const menuToggle = document.querySelector("#menu-toggle");
+  const heroEntry = document.querySelector('#hero-entry');
+  const heroEntryImage = document.querySelector('#alb');
+  const goBackWrap = document.querySelector('#go-back-wrap');
+  const goBackButton = document.querySelector('#go-back-button');
   const menuItems = document.querySelectorAll("#menu .item");
-  const backgroundLayer = document.querySelector("#background-layer");
-  const menuActiveBanner = document.querySelector("#menu-active-banner");
+  if (!heroEntry || !heroEntryImage || !goBackWrap || !goBackButton) return;
 
-  const getMenuToggleOffsets = () => {
-    const viewportHeight = window.visualViewport?.height ?? window.innerHeight ?? document.documentElement.clientHeight;
-    const closedOffset = Math.max(0, Math.min(Math.round(viewportHeight - 170), 660));
+  const resetAccordionPanels = () => {
+    const buttons = document.querySelectorAll('.accordion button');
+    const contents = document.querySelectorAll('.accordion .content, .accordion .contentps, .accordion .accordion-content');
 
-    return {
-      closed: closedOffset,
-      open: -Math.round(viewportHeight * 0.13),
-    };
-  };
+    buttons.forEach((btn) => {
+      if (!btn.parentElement) return;
+      btn.parentElement.classList.remove('active');
+      const panel = btn.parentElement.querySelector('.content, .contentps, .accordion-content');
+      setAccordionA11yState(btn, panel, false);
+    });
 
-  const syncMenuTogglePosition = () => {
-    const offsets = getMenuToggleOffsets();
-
-    gsap.set(menuToggle, {
-      y: menuToggle.classList.contains("active") ? offsets.open : offsets.closed,
+    contents.forEach((content) => {
+      content.style.maxHeight = '0';
     });
   };
 
-  if (!menuToggle) return;
+  const setMenuOpenState = (isOpen) => {
+    heroEntry.classList.toggle('is-hidden', isOpen);
+    goBackWrap.classList.toggle('active', isOpen);
+    goBackWrap.style.pointerEvents = 'none';
+    goBackWrap.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    goBackButton.style.pointerEvents = isOpen ? 'auto' : 'none';
+  };
+
   if (typeof gsap === 'undefined') {
-    // Fallback: keep menu toggle usable without animation library.
-    menuToggle.addEventListener("click", (e) => {
-      e.preventDefault();
-      menuToggle.classList.toggle("active");
-      const isActive = menuToggle.classList.contains("active");
-      document.body.style.overflowY = isActive ? "auto" : "hidden";
-      document.body.classList.toggle("no-scroll", !isActive);
-      setScrollState(isActive ? "auto" : "hidden");
-      menuToggle.textContent = isActive ? "GO BACK!" : "LET'S GO!";
+    heroEntry.style.transform = 'translateY(0)';
+    document.getElementById('menu').style.top = '110vh';
+    menuItems.forEach((item) => {
+      item.style.opacity = '0';
     });
+    resetAccordionPanels();
+    document.body.classList.add('no-scroll');
+    document.body.style.overflowY = 'hidden';
+    setScrollState('hidden');
+    setMenuOpenState(false);
+
+    const openMenuFallback = () => {
+      heroEntry.style.transform = 'translateY(-110%)';
+      document.getElementById('menu').style.top = '15vh';
+      menuItems.forEach((item) => {
+        item.style.opacity = '1';
+      });
+      document.body.style.overflowY = 'auto';
+      document.body.classList.remove('no-scroll');
+      setScrollState('auto');
+      setMenuOpenState(true);
+    };
+
+    const closeMenuFallback = () => {
+      heroEntry.style.transform = 'translateY(0)';
+      document.getElementById('menu').style.top = '110vh';
+      menuItems.forEach((item) => {
+        item.style.opacity = '0';
+      });
+      document.body.classList.add('no-scroll');
+      document.body.style.overflowY = 'hidden';
+      setScrollState('hidden');
+      resetAccordionPanels();
+      setMenuOpenState(false);
+    };
+
+    heroEntryImage.addEventListener('click', openMenuFallback);
+
+    goBackButton.addEventListener('click', closeMenuFallback);
     return;
   }
 
-  syncMenuTogglePosition();
-  if (menuActiveBanner) {
-    gsap.set(menuActiveBanner, { opacity: 0 });
-  }
+  gsap.set(heroEntry, { y: '0%' });
+  gsap.set(goBackWrap, { y: '-130%', opacity: 0 });
+  gsap.set(goBackButton, { pointerEvents: 'none' });
+  gsap.set('#menu', { top: '110vh' });
+  gsap.set(menuItems, { opacity: 0 });
 
   const speed = 0.5;
-  const menuToggleDelay = 0.5;
   const tl = gsap.timeline({ paused: true });
 
-  tl.set("#menu", { top: "110vh" });
-  tl.to("#site-title", speed, { opacity: "0", ease: "power1.inOut" });
-  tl.to("#menu", speed, { top: "15vh", ease: "power1.inOut" }, 0);
-  tl.to("#menu-toggle", speed, { y: getMenuToggleOffsets().open, ease: "power1" }, speed);
+  tl.to(heroEntry, { y: '-110%', duration: speed, ease: 'power1.inOut' }, 0);
+  tl.to('#menu', { top: '15vh', duration: speed, ease: 'power1.inOut' }, 0);
+  tl.to(goBackWrap, { y: '0%', opacity: 1, duration: speed, ease: 'power1.inOut' }, speed * 0.4);
   tl.to(menuItems, { opacity: 1, stagger: 0.1 }, `-=${speed / 2}`);
 
-  const handleViewportChange = () => {
-    if (tl.isActive()) return;
-    syncMenuTogglePosition();
+  const openMenu = () => {
+    if (tl.isActive() || tl.progress() === 1) return;
+    tl.play();
+    document.body.classList.remove('no-scroll');
+    document.body.style.overflowY = 'auto';
+    setScrollState('auto');
+    setMenuOpenState(true);
   };
 
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", handleViewportChange);
-    window.visualViewport.addEventListener("scroll", handleViewportChange);
-  }
-  window.addEventListener("resize", handleViewportChange);
-  window.addEventListener("orientationchange", handleViewportChange);
-  document.addEventListener("fullscreenchange", handleViewportChange);
-
-  const toggleBackground = (hide) => {
-    if (!backgroundLayer) return;
-    if (hide) {
-        backgroundLayer.style.opacity = "0";
-    } else {
-      setTimeout(() => {
-        backgroundLayer.style.opacity = "1";
-      }, 1200);
-    }
+  const closeMenu = () => {
+    if (tl.isActive() || tl.progress() === 0) return;
+    tl.reverse().eventCallback('onComplete', () => {
+      document.body.classList.add('no-scroll');
+      document.body.style.overflowY = 'hidden';
+      setScrollState('hidden');
+      resetAccordionPanels();
+      setMenuOpenState(false);
+    });
   };
 
-  menuToggle.addEventListener("click", (e) => {
-    e.preventDefault();
-    
+  heroEntryImage.addEventListener('click', openMenu);
+
+  goBackButton.addEventListener('click', closeMenu);
+
+  window.addEventListener('resize', () => {
     if (tl.isActive()) return;
-
-    const isActive = menuToggle.classList.contains("active");
-
-    if (isActive) {
-      tl.reverse();
-      toggleBackground(false);
-      document.body.classList.add("no-scroll");
-      document.body.style.overflowY = "hidden";
-      setScrollState("hidden");
-    } else {
-      tl.play();
-      toggleBackground(true);
-      document.body.classList.remove("no-scroll");
-      document.body.style.overflowY = "auto";
-      setScrollState("auto");
-    }
-
-    menuToggle.classList.toggle("active");
-    if (menuActiveBanner) {
-      gsap.to(menuActiveBanner, {
-        opacity: menuToggle.classList.contains("active") ? 1 : 0,
-        duration: speed,
-        ease: "power1.inOut",
-      });
-    }
-
-    setTimeout(() => {
-      menuToggle.textContent = menuToggle.classList.contains("active") ? "GO BACK!" : "LET'S GO!";
-    }, 800);
+    gsap.set(heroEntry, { y: tl.progress() === 1 ? '-110%' : '0%' });
   });
+
+  resetAccordionPanels();
+  document.body.classList.add('no-scroll');
+  document.body.style.overflowY = 'hidden';
+  setScrollState('hidden');
+  setMenuOpenState(false);
 };
 
 function setupCustomCursor() {
@@ -628,7 +606,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeScroll();
   
   prepareGalleryImages();
-  setupTitle();
   setupAccordion();
   setupMenu();
   setupCustomCursor();
@@ -644,14 +621,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   console.log("Ciao! Il sito in cui ti trovi l'ho progettato io, non sono un dev ma ho voluto mettermi alla prova e ho imparato molto da questa esperienza");
-});
-
-window.addEventListener("load", () => {
-  const currentScroll = getScrollState();
-  if (currentScroll === "auto") {
-    document.body.style.overflowY = "auto";
-    document.body.classList.remove("no-scroll");
-  }
 });
 
 function initPreloader() {
