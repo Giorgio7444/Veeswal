@@ -390,15 +390,22 @@ const setupMenu = () => {
     setMenuOpenState(true);
   };
 
+  const closeTl = gsap.timeline({ paused: true });
+  closeTl.to(heroEntry, { y: '0%', duration: speed, ease: 'power1.inOut' }, 0);
+  closeTl.to('#menu', { top: '110vh', duration: speed, ease: 'power1.inOut' }, 0);
+  closeTl.to(goBackWrap, { y: '-130%', opacity: 0, duration: speed, ease: 'power1.inOut' }, 0);
+  closeTl.to(menuItems, { opacity: 0, duration: speed, ease: 'power1.inOut' }, 0);
+  closeTl.eventCallback('onComplete', () => {
+    document.body.classList.add('no-scroll');
+    document.body.style.overflowY = 'hidden';
+    setScrollState('hidden');
+    resetAccordionPanels();
+    setMenuOpenState(false);
+  });
+
   const closeMenu = () => {
-    if (tl.isActive() || tl.progress() === 0) return;
-    tl.reverse().eventCallback('onComplete', () => {
-      document.body.classList.add('no-scroll');
-      document.body.style.overflowY = 'hidden';
-      setScrollState('hidden');
-      resetAccordionPanels();
-      setMenuOpenState(false);
-    });
+    if (tl.isActive() || closeTl.isActive()) return;
+    closeTl.play(0);
   };
 
   heroEntryImage.addEventListener('click', openMenu);
